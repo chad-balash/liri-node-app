@@ -52,6 +52,8 @@ function processUserData(command, value) {
         case 'do-what-it-says':
             doWhatCall();
             break;
+        default:
+        console.log('Enter a command');    
     }
 }
 

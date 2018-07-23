@@ -15,6 +15,9 @@ let client = new Twitter(keys.twitter);
 let Spotify = require('node-spotify-api');
 let spotify = new Spotify(keys.spotify);
 
+// Core node package for reading and writing files
+let fs = require("fs");
+
 // Variables for each value entered at terminal
 let command = process.argv[2];
 let value = process.argv[3];
@@ -39,11 +42,15 @@ function processUserData(command, value) {
             break;
 
         case 'movie-this':
-            omdbCall(value);
+            if (value === undefined) {
+                omdbCall('Mr. Nobody');
+            } else { 
+                omdbCall(value);
+              }
             break;
 
         case 'do-what-it-says':
-            doWhatCall(value);
+            doWhatCall();
             break;
     }
 }
@@ -55,8 +62,8 @@ function tweeterCall(value) {
 
         tweets.forEach(element => {
             console.log(`
-                ${'Tweet: ' + element.text}\n
-                ${'Created: ' + element.created_at}\n
+                Tweet: ${element.text}\n
+                Created: ${element.created_at}
             `);
         });
     });
@@ -66,21 +73,12 @@ function tweeterCall(value) {
 function spotifyCall(value) {
     spotify.search({ type: 'track', query: value}, function(error, data) {
         if(error) throw error;
-        if (data.tracks.items[0].preview_url === null) {
-            console.log(`
-                Artist(s): ${data.tracks.items[0].artists[0].name}
-                The song's name: ${data.tracks.items[0].name}
-                A preview link of the song from Spotify: 'No Preview'
-                The album that the song is from: ${data.tracks.items[0].album.name}
-            `);
-        } else {
             console.log(`
                 Artist(s): ${data.tracks.items[0].artists[0].name}
                 The song's name: ${data.tracks.items[0].name}
                 A preview link of the song from Spotify: ${data.tracks.items[0].preview_url}
                 The album that the song is from: ${data.tracks.items[0].album.name}
-            `);
-        }
+            `); 
     });
 }
 
@@ -99,4 +97,13 @@ function omdbCall(value) {
             Actors in the movie: ${JSON.parse(body).Actors}
         `);
     });
+}
+
+// `do-what-it-says` Request, reads file, then passes data to spotofyCall function to return results.
+function doWhatCall() {
+    fs.readFile("random.txt", "utf8", function(error, data) {
+        if(error) throw error;
+        let splitData = data.split(',');
+        spotifyCall(splitData[1]);
+      });
 }
